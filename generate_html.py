@@ -173,12 +173,13 @@ html = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Three Stripes — Clan Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   body {{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #1a1a2e;
-    color: #eee;
+    background: #1b2444;
+    color: #e8e0d0;
     padding: 20px;
     max-width: 1100px;
     margin: 0 auto;
@@ -186,11 +187,15 @@ html = f"""<!DOCTYPE html>
   h1 {{
     text-align: center;
     margin-bottom: 5px;
-    font-size: 1.5em;
+    font-family: 'Luckiest Guy', cursive;
+    font-size: 2.2em;
+    color: #f5c842;
+    text-shadow: 2px 2px 0 #1a2040, 0 0 10px rgba(245, 200, 66, 0.3);
+    letter-spacing: 2px;
   }}
   .meta {{
     text-align: center;
-    color: #888;
+    color: #8090b0;
     font-size: 0.85em;
     margin-bottom: 20px;
   }}
@@ -202,9 +207,11 @@ html = f"""<!DOCTYPE html>
     font-size: 0.9em;
   }}
   .stats span {{
-    padding: 6px 14px;
-    border-radius: 8px;
-    background: #16213e;
+    padding: 8px 18px;
+    border-radius: 12px;
+    background: #243054;
+    border: 2px solid #8a7030;
+    font-weight: bold;
   }}
   .top-grid {{
     display: grid;
@@ -213,8 +220,9 @@ html = f"""<!DOCTYPE html>
     margin-bottom: 20px;
   }}
   .chart-container {{
-    background: #16213e;
-    border-radius: 12px;
+    background: #243054;
+    border: 2px solid #8a7030;
+    border-radius: 16px;
     padding: 20px;
     height: 400px;
     position: relative;
@@ -222,10 +230,14 @@ html = f"""<!DOCTYPE html>
   .chart-container h2 {{
     font-size: 1.1em;
     margin-bottom: 15px;
-    color: #aaa;
+    color: #f5c842;
   }}
   .table-wrap {{
     overflow-x: auto;
+    background: #243054;
+    border: 2px solid #8a7030;
+    border-radius: 16px;
+    padding: 4px;
   }}
   table {{
     width: 100%;
@@ -233,33 +245,40 @@ html = f"""<!DOCTYPE html>
     white-space: nowrap;
   }}
   th {{
-    background: #16213e;
+    background: #243054;
     padding: 10px 8px;
     text-align: left;
     font-size: 0.85em;
-    color: #aaa;
+    color: #f5c842;
     position: sticky;
     top: 0;
+    border-bottom: 2px solid #3a4a70;
   }}
   td {{
     padding: 8px;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid #2d3d60;
     font-size: 0.9em;
   }}
   td.na {{
-    color: #555;
+    color: #4a5a80;
+  }}
+  tr:hover {{
+    background: #2a3a5e;
   }}
   tr.inactive {{
-    background: #2a1a1a;
+    background: #2e2030;
+  }}
+  tr.inactive:hover {{
+    background: #3a2840;
   }}
   tr.inactive td {{
-    color: #f66;
+    color: #e07070;
   }}
   tr.active td.delta {{
-    color: #6f6;
+    color: #7edb7e;
   }}
   tr.new-member td {{
-    color: #6cf;
+    color: #70bfff;
   }}
   tr.inactive td.delta {{
     font-weight: bold;
@@ -267,25 +286,26 @@ html = f"""<!DOCTYPE html>
   td a {{
     color: inherit;
     text-decoration: none;
-    border-bottom: 1px dotted #555;
+    border-bottom: 1px dotted #4a5a80;
   }}
   td a:hover {{
-    border-bottom-color: #aaa;
+    border-bottom-color: #f5c842;
   }}
   .shield {{
     font-size: 0.75em;
   }}
   .rules {{
-    background: #16213e;
-    border-radius: 12px;
+    background: #243054;
+    border: 2px solid #8a7030;
+    border-radius: 16px;
     padding: 20px;
     font-size: 0.9em;
-    color: #bbb;
+    color: #b0c0d8;
   }}
   .rules h2 {{
     font-size: 1.1em;
     margin: 15px 0 10px;
-    color: #aaa;
+    color: #f5c842;
   }}
   .rules h2:first-child {{
     margin-top: 0;
@@ -376,7 +396,7 @@ new Chart(document.getElementById('levelChart'), {{
         display: true,
         position: 'bottom',
         labels: {{
-          color: '#aaa',
+          color: '#8090b0',
           font: {{ size: 10 }},
           boxWidth: 12,
           padding: 8,
@@ -399,16 +419,16 @@ new Chart(document.getElementById('levelChart'), {{
     }},
     scales: {{
       x: {{
-        ticks: {{ color: '#888' }},
-        grid: {{ color: '#333' }},
+        ticks: {{ color: '#8090b0' }},
+        grid: {{ color: '#2d3d60' }},
       }},
       y: {{
-        ticks: {{ color: '#888' }},
-        grid: {{ color: '#333' }},
+        ticks: {{ color: '#8090b0' }},
+        grid: {{ color: '#2d3d60' }},
         title: {{
           display: true,
           text: 'Уровень',
-          color: '#666',
+          color: '#8090b0',
         }}
       }}
     }}
