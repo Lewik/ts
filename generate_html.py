@@ -309,7 +309,7 @@ html = f"""<!DOCTYPE html>
 <body>
 <h1>Three Stripes</h1>
 <div class="meta">
-  {snap_dates[0]} &rarr; {snap_dates[-1]} &middot; {len(snap_dates)} снапшотов &middot; Обновлено {generated}
+  {snap_dates[0]} &rarr; {snap_dates[-1]} &middot; {len(snap_dates)} снапшотов
 </div>
 <div class="stats">
   <span>Участников: {total}</span>
@@ -322,6 +322,7 @@ html = f"""<!DOCTYPE html>
     <canvas id="levelChart"></canvas>
   </div>
   <div class="rules">
+    <p style="color:#666; font-size:0.85em;">Обновлено {generated}</p>
     <h2>О клане</h2>
     <p>Three Stripes — русскоязычный клан для тех, кто играет в удовольствие. Никакого хардкора, просто заходим и кайфуем.</p>
     <h2>Активность</h2>
