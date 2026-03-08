@@ -14,10 +14,11 @@ snapshots = c.execute("SELECT id, date FROM snapshots ORDER BY date").fetchall()
 snap_dates = [s['date'] for s in snapshots]
 snap_ids = [s['id'] for s in snapshots]
 
-PROTECTED_MEMBERS = {'Lewik', 'Irina', 'Daminor', 'yaroslav'}
+PROTECTED_MEMBERS = {'Lewik', 'Irina', 'Daminor', 'yaroslav', 'ARTEM', 'NASTENKA51', '1959'}
+MAX_LEVEL = 13100
 
 all_members = c.execute(
-    "SELECT snapshot_id, position, name, help, level, source_file FROM members ORDER BY snapshot_id, position"
+    "SELECT snapshot_id, position, name, help, level, source_file, league_crowns, league_max_crowns, league_wins FROM members ORDER BY snapshot_id, position"
 ).fetchall()
 conn.close()
 
@@ -31,9 +32,9 @@ for m in all_members:
         key = f"{name}#{m['level']}"
         if key not in player_history:
             player_history[key] = {}
-        player_history[key][snap_id] = {'level': m['level'], 'help': m['help'], 'position': m['position'], 'source_file': m['source_file']}
+        player_history[key][snap_id] = {'level': m['level'], 'help': m['help'], 'position': m['position'], 'source_file': m['source_file'], 'league_crowns': m['league_crowns'], 'league_max_crowns': m['league_max_crowns'], 'league_wins': m['league_wins']}
     else:
-        player_history[name][snap_id] = {'level': m['level'], 'help': m['help'], 'position': m['position'], 'source_file': m['source_file']}
+        player_history[name][snap_id] = {'level': m['level'], 'help': m['help'], 'position': m['position'], 'source_file': m['source_file'], 'league_crowns': m['league_crowns'], 'league_max_crowns': m['league_max_crowns'], 'league_wins': m['league_wins']}
 
 
 def resolve_duplicates(player_history, snap_ids):
@@ -101,11 +102,26 @@ inactive_count = sum(1 for p in players if p['inactive'])
 total = sum(1 for p in players if snap_ids[-1] in p['history'])
 generated = datetime.now().strftime("%Y-%m-%d %H:%M")
 
+has_league_data = any(
+    p['history'].get(snap_ids[-1], {}).get('league_crowns') is not None
+    for p in players if snap_ids[-1] in p['history']
+)
+
+table_snap_ids = snap_ids[-3:]
+table_snap_dates = snap_dates[-3:]
+
 # --- Table rows ---
 rows_html = []
+max_level_separator_added = False
+league_cols = 3 if has_league_data else 0
+total_cols = 2 + len(table_snap_ids) * 2 + league_cols + 1
 for p in players:
     if snap_ids[-1] not in p['history']:
         continue
+
+    if not max_level_separator_added and p['latest_level'] < MAX_LEVEL:
+        rows_html.append(f'<tr class="max-level-separator"><td colspan="{total_cols}"></td></tr>')
+        max_level_separator_added = True
 
     is_protected = p['display_name'] in PROTECTED_MEMBERS
     row_class = "inactive" if p['inactive'] else ("new-member" if p['is_new'] else "active")
@@ -114,14 +130,30 @@ for p in players:
 
     shield = ' <span class="shield" title="Защищённый игрок — не будет исключён на общих условиях">&#128274;</span>' if is_protected else ''
     cells = f'<td>{p["latest_position"]}</td><td>{p["display_name"]}{shield}</td>'
-    for sid in snap_ids:
+    for sid in table_snap_ids:
         if sid in p['history']:
             h = p['history'][sid]
-            src = h.get('source_file', '')
-            link = lambda v: f'<a href="{src}">{v}</a>' if src else str(v)
-            cells += f'<td>{link(h["level"])}</td><td>{link(h["help"])}</td>'
+            sources = [s for s in (h.get('source_file') or '').split(',') if s]
+            def make_links(v, srcs=sources):
+                if not srcs:
+                    return str(v)
+                srcs_js = ','.join(srcs)
+                return f'<a href="#" onclick="showImgs(\'{srcs_js}\');return false">{v}</a>'
+            cells += f'<td>{make_links(h["level"])}</td><td>{make_links(h["help"])}</td>'
         else:
             cells += '<td class="na">—</td><td class="na">—</td>'
+
+    if has_league_data:
+        latest = p['history'].get(snap_ids[-1], {})
+        lc = latest.get('league_crowns')
+        if lc is not None:
+            l_sources = [s for s in (latest.get('source_file') or '').split(',') if s]
+            l_srcs_js = ','.join(l_sources)
+            def l_link(v):
+                return f'<a href="#" onclick="showImgs(\'{l_srcs_js}\');return false">{v}</a>' if l_sources else str(v)
+            cells += f'<td>{l_link(lc)}</td><td>{l_link(latest.get("league_max_crowns", "—"))}</td><td>{l_link(latest.get("league_wins", "—"))}</td>'
+        else:
+            cells += '<td class="na">—</td><td class="na">—</td><td class="na">—</td>'
 
     if p['recent_delta'] is not None:
         d = p['recent_delta']
@@ -162,7 +194,9 @@ for i, p in enumerate(players):
         'tension': 0.3,
     })
 
-date_headers = ''.join(f'<th colspan="2">{d}</th>' for d in snap_dates)
+date_headers = ''.join(f'<th colspan="2">{d}</th>' for d in table_snap_dates)
+league_headers_top = '<th colspan="3">Лига</th>' if has_league_data else ''
+league_headers_bottom = '<th>Короны</th><th>Макс</th><th>Победы</th>' if has_league_data else ''
 
 html = f"""<!DOCTYPE html>
 <html lang="ru">
@@ -288,6 +322,10 @@ html = f"""<!DOCTYPE html>
   td a:hover {{
     border-bottom-color: #f5c842;
   }}
+  tr.max-level-separator td {{
+    padding: 0;
+    border-bottom: 3px solid #f5c842;
+  }}
   .shield {{
     font-size: 0.75em;
   }}
@@ -309,6 +347,28 @@ html = f"""<!DOCTYPE html>
   }}
   .rules ul {{
     margin: 8px 0 8px 20px;
+  }}
+  .modal-overlay {{
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    overflow: auto;
+    padding: 20px;
+  }}
+  .modal-overlay.active {{
+    display: flex;
+  }}
+  .modal-overlay img {{
+    max-height: 90vh;
+    border: 3px solid #8a7030;
+    border-radius: 12px;
+    flex-shrink: 0;
   }}
   @media (max-width: 768px) {{
     .top-grid {{
@@ -361,10 +421,12 @@ html = f"""<!DOCTYPE html>
     <th rowspan="2">#</th>
     <th rowspan="2">Имя</th>
     {date_headers}
-    <th rowspan="2">Результат<br><small>{snap_dates[-2]} &rarr; {snap_dates[-1]}</small></th>
+    {league_headers_top}
+    <th rowspan="2">Результат<br><small>{table_snap_dates[-2]} &rarr; {table_snap_dates[-1]}</small></th>
   </tr>
   <tr>
-    {''.join('<th>Уровень</th><th>Помощь</th>' for _ in snap_dates)}
+    {''.join('<th>Уровень</th><th>Помощь</th>' for _ in table_snap_dates)}
+    {league_headers_bottom}
   </tr>
 </thead>
 <tbody>
@@ -373,6 +435,7 @@ html = f"""<!DOCTYPE html>
 </table>
 </div>
 
+<div class="modal-overlay" id="imgOverlay"></div>
 <script>
 const datasets = {json.dumps(chart_datasets, ensure_ascii=False, default=str)};
 new Chart(document.getElementById('levelChart'), {{
@@ -437,6 +500,21 @@ const d = new Date(el.dataset.date);
 const diff = Math.floor((new Date() - d) / 86400000);
 const days = diff === 0 ? 'сегодня' : diff === 1 ? '1 день назад' : diff < 5 ? diff + ' дня назад' : diff + ' дней назад';
 el.textContent = el.dataset.date + ' (' + days + ')';
+
+const overlay = document.getElementById('imgOverlay');
+function showImgs(srcList) {{
+  overlay.innerHTML = srcList.split(',').map(s => {{
+    const date = s.split('/')[1] || '';
+    return '<div style="text-align:center"><div style="color:#f5c842;margin-bottom:6px;font-size:0.85em">' + date + '</div><img src="' + s + '"></div>';
+  }}).join('');
+  overlay.classList.add('active');
+}}
+function closeOverlay() {{
+  overlay.classList.remove('active');
+  overlay.innerHTML = '';
+}}
+overlay.addEventListener('click', closeOverlay);
+document.addEventListener('keydown', (e) => {{ if (e.key === 'Escape') closeOverlay(); }});
 </script>
 </body>
 </html>
