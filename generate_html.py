@@ -523,6 +523,8 @@ html = f"""<!DOCTYPE html>
   }}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+<script>window.LogRocket && window.LogRocket.init('ewzmj9/three-stripes');</script>
 </head>
 <body>
 <h1>Three Stripes</h1>

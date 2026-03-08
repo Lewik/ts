@@ -51,8 +51,8 @@ When user drops new screenshot files into the project root:
    - All new players — to fill `game_start_date`
    - **Once a month**: all players — to update `profile_*` stats (wins, help given/received, territories, collections, sets)
    - Append profile screenshot path to `source_file`
-   - After monthly profile update: analyze data and propose **fun facts** for the site (records, milestones, unusual stats). Different observations each time — be creative. User picks which ones to display
-5. **Generate** HTML: `python3 generate_html.py`
+5. **Fun facts review**: 6 auto-generated facts are computed in `generate_html.py` (help monster, most independent, lone wolf, fastest/slowest leveler, oldest player). After each weekly snapshot, glance at the data — if something unusual or funny stands out beyond the standard 6, propose it to the user as a new auto-fact or a one-time highlight
+6. **Generate** HTML: `python3 generate_html.py`
 6. **Verify** the page works locally (open in browser, check chart renders)
 7. **Commit + push** when user confirms everything looks good
 
